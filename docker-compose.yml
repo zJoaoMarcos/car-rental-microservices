@@ -1,0 +1,45 @@
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    # AMQP protocol
+      - "15672:15672"  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - car-rental-network
+
+  postgres-inventory:
+    container_name: postgres-inventory
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=inventory_db
+    networks:
+      - car-rental-network
+
+  postgres-booking:
+    container_name: postgres-booking
+    image: postgres
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=booking_db
+    networks:
+      - car-rental-network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  car-rental-network:
+    driver: bridge
