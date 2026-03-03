@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String EXCHANGE = "booking-exchange";
-    public static final String ROUTING_KEY = "booking.created";
+    public static final String BOOKING_CREATED_ROUTING_KEY = "booking.created";
+    public static final String BOOKING_CANCELLED_ROUTING_KEY = "booking.cancelled";
 
     @Bean
     public TopicExchange exchange() {

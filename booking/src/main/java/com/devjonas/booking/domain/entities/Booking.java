@@ -2,7 +2,7 @@ package com.devjonas.booking.domain.entities;
 
 import com.devjonas.booking.application.dto.VehicleDTO;
 import com.devjonas.booking.domain.enums.BookingStatus;
-import com.devjonas.booking.domain.exception.InvalidBookingDatesException;
+import com.devjonas.booking.domain.exception.BookingInvalidatePeriodException;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -20,8 +20,8 @@ public class Booking extends BaseEntity {
     @Column(name = "vehicle_id")
     private UUID vehicleId;
 
-    @Column(name = "client_id")
-    private UUID clientId;
+    @Column(name = "customer_id")
+    private UUID customerId;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
@@ -36,9 +36,9 @@ public class Booking extends BaseEntity {
     private BigDecimal totalAmount;
 
 
-    private Booking(UUID vehicleId, UUID clientId, BookingStatus status, LocalDateTime startDate, LocalDateTime endDate, BigDecimal totalAmount) {
+    private Booking(UUID vehicleId, UUID customerId, BookingStatus status, LocalDateTime startDate, LocalDateTime endDate, BigDecimal totalAmount) {
         this.vehicleId = vehicleId;
-        this.clientId = clientId;
+        this.customerId = customerId;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -47,23 +47,23 @@ public class Booking extends BaseEntity {
 
     protected Booking() {}
 
-    public static Booking create(VehicleDTO vehicle, UUID clientId, LocalDateTime startDate, LocalDateTime endDate) {
+    public static Booking create(VehicleDTO vehicle, UUID customerId, LocalDateTime startDate, LocalDateTime endDate) {
         validateDates(startDate, endDate);
 
         BigDecimal totalAmount = calculateAmount(vehicle.dailyRate(), startDate, endDate);
 
         BookingStatus initialStatus = BookingStatus.PENDING;
 
-        return new Booking(vehicle.id(), clientId, initialStatus, startDate, endDate, totalAmount);
+        return new Booking(vehicle.id(), customerId, initialStatus, startDate, endDate, totalAmount);
     }
 
     private static void validateDates(LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate.isAfter(endDate)) {
-            throw new InvalidBookingDatesException();
+            throw new BookingInvalidatePeriodException();
         }
 
         if (startDate.isBefore(LocalDateTime.now())) {
-            throw new InvalidBookingDatesException();
+            throw new BookingInvalidatePeriodException();
         }
     }
 
@@ -76,7 +76,7 @@ public class Booking extends BaseEntity {
 
         BigDecimal minimumHours = BigDecimal.valueOf(2);
         if (diffTotalInHours.compareTo(minimumHours) < 0) {
-            throw new InvalidBookingDatesException();
+            throw new BookingInvalidatePeriodException();
         }
 
         BigDecimal hoursInDay = BigDecimal.valueOf(24);

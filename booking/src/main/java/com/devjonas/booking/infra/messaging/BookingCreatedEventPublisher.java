@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class BookingEventPublisher {
+public class BookingCreatedEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
     public void publish(BookingCreatedEvent event) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY,
+                RabbitMQConfig.BOOKING_CREATED_ROUTING_KEY,
                 event
         );
     }
