@@ -1,6 +1,5 @@
 package com.devjonas.inventory.application.dto;
 
-import com.devjonas.inventory.domain.enums.VehicleStatus;
 import com.devjonas.inventory.domain.enums.VehicleTypes;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,8 +18,6 @@ public record RegisterVehicleDTO(
 
         String plate,
 
-        int dailyRate,
-
-        VehicleStatus status
+        int dailyRate
 ) {
 }

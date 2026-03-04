@@ -8,12 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpecificationExecutor<Booking> {
 
-    @Query("SELECT b FROM Booking WHERE b.vehicleId = :vehicleId AND b.startDate < :endDate AND b.endDate > :startDate")
+    @Query("SELECT b FROM Booking b WHERE b.vehicleId = :vehicleId AND b.startDate < :endDate AND b.endDate > :startDate")
     List<Booking> findConflictingBookings(
             @Param("vehicleId") UUID vehicleId,
             @Param("startDate") LocalDateTime startDate,

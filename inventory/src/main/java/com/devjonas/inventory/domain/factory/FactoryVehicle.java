@@ -4,6 +4,7 @@ import com.devjonas.inventory.application.dto.RegisterVehicleDTO;
 import com.devjonas.inventory.domain.entities.EconomicCar;
 import com.devjonas.inventory.domain.entities.SuvCar;
 import com.devjonas.inventory.domain.entities.Vehicle;
+import com.devjonas.inventory.domain.enums.VehicleStatus;
 import com.devjonas.inventory.domain.enums.VehicleTypes;
 
 public class FactoryVehicle {
@@ -19,7 +20,7 @@ public class FactoryVehicle {
             vehicle.setPlate(dto.plate());
             vehicle.setYear(dto.year());
             vehicle.setDailyRate(dto.dailyRate());
-            vehicle.setStatus(dto.status());
+            vehicle.setStatus(VehicleStatus.AVAILABLE);
 
             return vehicle;
         }
@@ -32,7 +33,7 @@ public class FactoryVehicle {
             vehicle.setPlate(dto.plate());
             vehicle.setYear(dto.year());
             vehicle.setDailyRate(dto.dailyRate());
-            vehicle.setStatus(dto.status());
+            vehicle.setStatus(VehicleStatus.AVAILABLE);
 
             return vehicle;
         }
