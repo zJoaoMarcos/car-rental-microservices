@@ -1,15 +1,12 @@
 package com.devjonas.indentity.application.usecase;
 
 import com.devjonas.indentity.application.dto.RegisterEmployeeDTO;
-import com.devjonas.indentity.domain.entities.Customer;
 import com.devjonas.indentity.domain.entities.Employee;
-import com.devjonas.indentity.domain.entities.User;
 import com.devjonas.indentity.domain.enums.UserTypes;
 import com.devjonas.indentity.domain.event.UserCreatedEvent;
 import com.devjonas.indentity.domain.factory.FactoryUser;
 import com.devjonas.indentity.infra.exception.UserAlreadyExistsException;
 import com.devjonas.indentity.infra.messaging.UserCreatedEventPublisher;
-import com.devjonas.indentity.repository.CustomerRepository;
 import com.devjonas.indentity.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
