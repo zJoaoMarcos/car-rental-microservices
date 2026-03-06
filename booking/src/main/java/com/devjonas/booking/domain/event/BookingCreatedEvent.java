@@ -1,6 +1,5 @@
 package com.devjonas.booking.domain.event;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
