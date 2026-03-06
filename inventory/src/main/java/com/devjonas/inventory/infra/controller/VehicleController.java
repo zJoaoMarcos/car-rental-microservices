@@ -52,7 +52,7 @@ public class VehicleController {
         try {
             return ResponseEntity.ok(getVehicleById.execute(id));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error so");
+            return ResponseEntity.internalServerError().body("Error");
         }
     }
 }
