@@ -6,6 +6,7 @@ public record RegisterEmployeeDTO(
         String name,
         String email,
         String cpf,
+        String password,
         EmployeePosition position
 ) {
 }

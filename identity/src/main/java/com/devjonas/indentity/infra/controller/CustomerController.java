@@ -29,7 +29,7 @@ public class CustomerController {
     public ResponseEntity<Object> register(@Valid @RequestBody RegisterCustomerDTO requestDTO) {
         try {
             return ResponseEntity.ok(registerNewCustomer.execute(requestDTO));
-        } catch (UserAlreadyExistsException e ) {
+        } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }

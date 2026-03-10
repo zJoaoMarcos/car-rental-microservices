@@ -9,6 +9,7 @@ import com.devjonas.indentity.infra.exception.UserAlreadyExistsException;
 import com.devjonas.indentity.infra.messaging.UserCreatedEventPublisher;
 import com.devjonas.indentity.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,9 @@ public class RegisterNewEmployee {
     @Autowired
     private UserCreatedEventPublisher userEventPublisher;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public Employee execute(RegisterEmployeeDTO request) {
 
         Optional<Employee> emailExists = employeeRepository.findByEmail(request.email());
@@ -33,6 +37,9 @@ public class RegisterNewEmployee {
 
         FactoryUser factory = new FactoryUser();
         Employee employee = factory.createEmployee(request);
+
+        var password = passwordEncoder.encode(request.password());
+        employee.setPassword(password);
 
         Employee saved = employeeRepository.save(employee);
         userEventPublisher.publish(new UserCreatedEvent(
