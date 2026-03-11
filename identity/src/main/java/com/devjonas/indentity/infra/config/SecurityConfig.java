@@ -1,5 +1,6 @@
 package com.devjonas.indentity.infra.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,18 +12,19 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 public class SecurityConfig {
 
+    @Autowired
+    private SecurityFilter securityFilter;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        return http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/v1/auth").permitAll();
-                    auth.requestMatchers("/v1/customers").permitAll();
-                    auth.requestMatchers("/v1/employees").permitAll();
-
                     auth.anyRequest().authenticated();
                 })
-                .addFilterBefore(null, BasicAuthenticationFilter.class);
-        return http.build();
+                .addFilterBefore(securityFilter, BasicAuthenticationFilter.class)
+        .build();
     }
 
     @Bean

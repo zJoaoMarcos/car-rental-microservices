@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Inventory service → /v1/vehicles
+          - id: inventory
+            uri: http://localhost:8083
+            predicates:
+              - Path=/v1/vehicles,/v1/vehicles/**
+
+          # Booking service → /v1/bookings
+          - id: booking
+            uri: http://localhost:8081
+            predicates:
+              - Path=/v1/bookings,/v1/bookings/**
+
+          # Identity service → /v1/customers, /v1/employees, /v1/auth
+          - id: identity-customers
+            uri: http://localhost:8082
+            predicates:
+              - Path=/v1/customers,/v1/customers/**
+
+          - id: identity-employees
+            uri: http://localhost:8082
+            predicates:
+              - Path=/v1/employees,/v1/employees/**
+
+          - id: identity-auth
+            uri: http://localhost:8082
+            predicates:
+              - Path=/v1/auth,/v1/auth/**
+
+security:
+  service-jwt-secret: "#CAR_RENTAIL_"
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: inventory
+        url: /v1/vehicles/v3/api-docs
+      - name: booking
+        url: /v1/bookings/v3/api-docs
+      - name: identity
+        url: /v1/customers/v3/api-docs

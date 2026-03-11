@@ -1,4 +1,4 @@
-package com.devjonas.indentity.infra.provider;
+package com.devjonas.gateway.infra.provider;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -18,12 +18,10 @@ public class JWTProvider {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
 
         try {
-            var subject = JWT.require(algorithm)
+            return JWT.require(algorithm)
                     .build()
-                    .verify(token).getSubject();
-
-            return subject;
-
+                    .verify(token)
+                    .getSubject();
         } catch (JWTVerificationException e) {
             return "";
         }
