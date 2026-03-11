@@ -6,46 +6,77 @@ Backend para aluguel de carros construído com arquitetura de microsserviços, J
 
 ## Arquitetura
 
+```mermaid
+graph TD
+    Client([Cliente]) -->|REST| GW[API Gateway :8080]
+
+    GW -->|/v1/auth, /v1/customers, /v1/employees| ID[Identity Service :8082]
+    GW -->|/v1/vehicles| INV[Inventory Service :8083]
+    GW -->|/v1/bookings| BK[Booking Service :8081]
+
+    BK -->|HTTP - busca veículo| INV
+
+    BK -->|booking.created / booking.cancelled| MQ[(RabbitMQ\nbooking-exchange)]
+
+    MQ -->|booking.created| INV
+    MQ -.->|booking.created| PAY[Payment Service]
+    MQ -.->|payment.confirmed| NT[Notification Service]
+    PAY -.->|payment.confirmed| CT[Contract Service]
+
+    ID --- DB_ID[(identity_db)]
+    INV --- DB_INV[(inventory_db)]
+    BK --- DB_BK[(booking_db)]
+
+    style GW fill:#4a90d9,stroke:#2c5f8a,color:#fff
+    style ID fill:#50b86c,stroke:#2d8a4a,color:#fff
+    style INV fill:#50b86c,stroke:#2d8a4a,color:#fff
+    style BK fill:#50b86c,stroke:#2d8a4a,color:#fff
+    style MQ fill:#ff9f43,stroke:#cc7a2e,color:#fff
+    style PAY fill:#a0a0a0,stroke:#707070,color:#fff
+    style NT fill:#a0a0a0,stroke:#707070,color:#fff
+    style CT fill:#a0a0a0,stroke:#707070,color:#fff
+    style DB_ID fill:#336791,stroke:#1e3d56,color:#fff
+    style DB_INV fill:#336791,stroke:#1e3d56,color:#fff
+    style DB_BK fill:#336791,stroke:#1e3d56,color:#fff
 ```
-                        ┌─────────────────┐
-                        │   API Gateway   │
-                        │     :8080       │
-                        └────────┬────────┘
-                                 │ REST
-        ┌────────────────────────┼────────────────────────┐
-        │                        │                        │
-┌───────▼───────┐   ┌────────────▼────────┐   ┌──────────▼──────┐
-│   Inventory   │   │      Booking        │   │    Identity     │
-│   Service     │◄──┤      Service        ├──►│    Service      │
-│  :8083        │   │      :8081          │   │    :8082        │
-└───────────────┘   └──────────┬──────────┘   └─────────────────┘
-                               │
-                    ┌──────────▼──────────┐
-                    │      RabbitMQ       │
-                    │  booking-exchange   │
-                    └──┬──────────────┬───┘
-                       │              │
-             ┌─────────▼───┐   ┌──────▼──────────┐
-             │   Payment   │   │  Notification   │
-             │   Service   │   │    Service      │
-             │ (planejado) │   │  (planejado)    │
-             └─────────────┘   └─────────────────┘
-                    │
-             ┌──────▼──────────┐
-             │    Contract     │
-             │    Service      │
-             │  (planejado)    │
-             └─────────────────┘
-```
+
+> Linhas tracejadas representam serviços **planejados**.
 
 ### Fluxo de uma reserva
 
-```
-1. POST /v1/bookings          → Booking Service cria a reserva
-2. booking.created (event)    → Inventory marca veículo como RENTED
-3. booking.created (event)    → Payment cria cobrança PENDING
-4. payment.confirmed (event)  → Contract gera PDF do contrato
-5. payment.confirmed (event)  → Notification envia e-mail ao cliente
+```mermaid
+sequenceDiagram
+    actor C as Cliente
+    participant GW as API Gateway
+    participant BK as Booking Service
+    participant INV as Inventory Service
+    participant MQ as RabbitMQ
+    participant PAY as Payment Service
+    participant CT as Contract Service
+    participant NT as Notification Service
+
+    C->>GW: POST /v1/bookings
+    GW->>GW: Valida JWT
+    GW->>BK: Encaminha request
+    BK->>INV: GET /v1/vehicles/details/{id}
+    INV-->>BK: Dados do veículo
+    BK->>BK: Verifica conflitos e calcula valor
+    BK-->>GW: 201 Created
+    GW-->>C: Reserva criada
+
+    BK--)MQ: booking.created
+    MQ--)INV: booking.created
+    INV->>INV: Marca veículo como RENTED
+
+    Note over PAY,NT: Serviços planejados
+
+    MQ---)PAY: booking.created
+    PAY->>PAY: Cria cobrança PENDING
+    PAY--)MQ: payment.confirmed
+    MQ---)CT: payment.confirmed
+    CT->>CT: Gera PDF do contrato
+    MQ---)NT: payment.confirmed
+    NT->>NT: Envia e-mail ao cliente
 ```
 
 ---
