@@ -1,4 +1,4 @@
-# Car Rental System
+****# Car Rental System
 
 Backend para aluguel de carros construído com arquitetura de microsserviços, Java 21, Spring Boot e comunicação assíncrona via RabbitMQ.
 
@@ -9,15 +9,15 @@ Backend para aluguel de carros construído com arquitetura de microsserviços, J
 ```
                         ┌─────────────────┐
                         │   API Gateway   │
-                        │  (planejado)    │
+                        │     :8080       │
                         └────────┬────────┘
                                  │ REST
         ┌────────────────────────┼────────────────────────┐
         │                        │                        │
 ┌───────▼───────┐   ┌────────────▼────────┐   ┌──────────▼──────┐
-│   Inventory   │   │      Booking        │   │    Customer     │
+│   Inventory   │   │      Booking        │   │    Identity     │
 │   Service     │◄──┤      Service        ├──►│    Service      │
-│  :8080        │   │      :8081          │   │   (planejado)   │
+│  :8083        │   │      :8081          │   │    :8082        │
 └───────────────┘   └──────────┬──────────┘   └─────────────────┘
                                │
                     ┌──────────▼──────────┐
@@ -52,14 +52,15 @@ Backend para aluguel de carros construído com arquitetura de microsserviços, J
 
 ## Microsserviços
 
-| Serviço      | Porta | Status        | Responsabilidade                     |
-|--------------|-------|---------------|--------------------------------------|
-| inventory    | 8080  | ✅ Implementado | Cadastro e gestão de veículos        |
-| booking      | 8081  | ✅ Implementado | Reservas, cancelamentos, conflitos   |
-| customer     | —     | 🔲 Planejado   | Cadastro e gestão de clientes        |
-| payment      | —     | 🔲 Planejado   | Processamento de pagamentos          |
-| notification | —     | 🔲 Planejado   | Envio de e-mails e notificações      |
-| contract     | —     | 🔲 Planejado   | Geração de contratos em PDF          |
+| Serviço      | Porta | Status        | Responsabilidade                          |
+|--------------|-------|---------------|-------------------------------------------|
+| gateway      | 8080  | ✅ Implementado | Roteamento, autenticação JWT              |
+| inventory    | 8083  | ✅ Implementado | Cadastro e gestão de veículos             |
+| booking      | 8081  | ✅ Implementado | Reservas, cancelamentos, conflitos        |
+| identity     | 8082  | ✅ Implementado | Clientes, funcionários, autenticação      |
+| notification | —     | 🔲 Planejado   | Envio de e-mails e notificações           |
+| payment      | —     | 🔲 Planejado   | Processamento de pagamentos               |
+| contract     | —     | 🔲 Planejado   | Geração de contratos em PDF               |
 
 ---
 
@@ -71,6 +72,8 @@ Backend para aluguel de carros construído com arquitetura de microsserviços, J
 - **Spring Data JPA** + Hibernate
 - **Spring AMQP** — produtores e consumidores de eventos
 - **Lombok** — redução de boilerplate
+- **Spring Cloud Gateway (MVC)** — API Gateway com roteamento e filtros
+- **JWT (java-jwt)** — autenticação via token no gateway
 - **Maven** — build e gerenciamento de dependências
 
 ---
@@ -95,18 +98,35 @@ Backend para aluguel de carros construído com arquitetura de microsserviços, J
 # 1. Subir infraestrutura (PostgreSQL + RabbitMQ)
 docker-compose up -d
 
-# 2. Inventory Service
+# 2. Identity Service
+cd identity && ./mvnw spring-boot:run
+
+# 3. Inventory Service (em outro terminal)
 cd inventory && ./mvnw spring-boot:run
 
-# 3. Booking Service (em outro terminal)
+# 4. Booking Service (em outro terminal)
 cd booking && ./mvnw spring-boot:run
+
+# 5. Gateway (em outro terminal)
+cd gateway && ./mvnw spring-boot:run
 ```
 
 ---
 
 ## Endpoints disponíveis
 
-### Inventory Service — `localhost:8080`
+> Todas as requisições passam pelo **Gateway** (`localhost:8080`).
+> Rotas `/v1/auth/**` são públicas. As demais exigem header `Authorization` com JWT válido.
+
+### Identity Service — `/v1/auth`, `/v1/customers`, `/v1/employees`
+
+```
+POST   /v1/auth                Autenticação (login)
+GET    /v1/customers           Listar clientes
+GET    /v1/employees           Listar funcionários
+```
+
+### Inventory Service — `/v1/vehicles`
 
 ```
 POST   /v1/vehicles            Cadastrar veículo
@@ -114,7 +134,7 @@ GET    /v1/vehicles            Listar veículos
 GET    /v1/vehicles/details/{id}  Buscar veículo por ID
 ```
 
-### Booking Service — `localhost:8081`
+### Booking Service — `/v1/bookings`
 
 ```
 POST   /v1/bookings            Criar reserva
@@ -124,25 +144,16 @@ DELETE /v1/bookings/{id}       Cancelar reserva
 
 ---
 
-## Roadmap
-
-Veja o progresso completo do projeto:
-
-```bash
-./roadmap.sh
-```
-
----
-
 ## Estrutura do projeto
 
 ```
 car-rental/
-├── booking/          ✅ Reservas e eventos
+├── gateway/          ✅ Roteamento e autenticação JWT
+├── identity/         ✅ Clientes, funcionários e auth
 ├── inventory/        ✅ Veículos e listeners
-├── customer/         🔲 A implementar
-├── payment/          🔲 A implementar
+├── booking/          ✅ Reservas e eventos
 ├── notification/     🔲 A implementar
+├── payment/          🔲 A implementar
 ├── contract/         🔲 A implementar
 ├── docker-compose.yml
 └── roadmap.sh
